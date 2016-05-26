@@ -7,16 +7,13 @@ class DistanceVectorTable(object):
 	# For indexing
 	NODE_VIA = 0
 	DISTANCE = 1
-	PORT = 2
 	
 	# Attributes
-	nodeID = ''		# The ID of this node
+	nodeID = ''		# (Character) ID of node that this DVT belongs to
 	distanceTo = {}		# Distances to different nodes
-				# Stored in the format: { 'nodeTo': ( nodeVia, cost, communication port ) }
+				# Stored in the format: { 'nodeTo': ( cost, nodeVia ) }
 
 	# Constructor
-	# Given a data string in the format:
-	#	[NodeID]~[Neighbour node]=[cost],...
 	def __init__(self, dataStr):
 		dvtComponents = dataStr.split('~')
 		self.nodeID = dvtComponents[0]
@@ -29,7 +26,7 @@ class DistanceVectorTable(object):
 
 	# Show the distance vector table
 	def show(self):
-		print "++ Node %s's Distance Vector Table ++" % self.nodeID
+		print "++ Distance Vector Table ++" % self.nodeID
 		print "nodeTo %t | nodeVia %t | cost"
 		for nodeTo in self.distanceTo.keys():
 			print "%s %t | %s %t | %s" % \
