@@ -13,9 +13,6 @@ from sys import argv
 # ----------------------------------------------------
 def main():
 
-	# Global variables 
-	global node		# the object representing this node
-
 	# Check for proper usage
 	if len(argv) < 4:
 		print "Usage: python DvrBase.py <NODE_ID> <NODE_PORT> <config.txt> [-p] [-e]"
@@ -30,17 +27,39 @@ def main():
 	node = DVRNode(nodeID, configFilename)
 	node.showInfo()
 	exit()
+
+	# Prepare the list of dvt's to process
+	dvtProcessList = []
+
+	# Set the flag to send data to be false
+	sendFlag = False
+	IDLE_DURATION = 5
 	
-	# Create the listen thread and exchange thread
+	# Create the listen thread, timerThread, and exchange class
+	# listenThread = ListenThread(nodePort, dvtProcessList)
+	# timerThread = TimerThread(IDLE_DURATION, sendFlag)
+	# dvtSender = DVTSender(nodePort, node)
 
-	# Run exchange thread
-
-	# Run listen thread
+	# Run the listen thread and timer thread
+	#listenThread.run()
+	#timerThread.run()
 
 	# Wait for termination
 	while True:
-		pass
+		# Process all the dvt's
+		while len(dvtProcessList) > 0:
+			# procDVT = dvtProcessList.pop(0)
+			# process procDVT
+			print "Processing the first DVT in those received..."
 
+		# Check whether it is time to send out the DVT's
+		if sendFlag:
+			# Send the DVT's
+			print "Sending the dvt's..."
+
+			# Reset the flag
+			sendFlag = False
+		
 # ----------------------------------------------------
 # RUNNING MAIN
 # ----------------------------------------------------

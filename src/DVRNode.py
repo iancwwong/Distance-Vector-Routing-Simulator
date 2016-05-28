@@ -9,6 +9,7 @@ class DVRNode(object):
 	# Attributes
 	nodeID = ''		# (Character) ID of this node
 	neighbours = {}		# Stores ID's of neighbour nodes, and their associated port numbers
+				# Format: {'NeighbourID': <port>}
 	dvt = None		# Stores distances to nodes via nodes
 	
 	# Constructor - given nodeID, and name of configuration file
@@ -16,10 +17,12 @@ class DVRNode(object):
 		self.nodeID = nodeid
 	
 		# Prepare the node's neighbour and dvt info from configuration file
-		pass
+		print "Initialising the neighbour table..."
+
+		print "Initialising the dvt table..."		
+
 	
 	# Show the details of this node
 	def showInfo(self):
 		print "++ Node %s Neighbour Info ++" % self.nodeID
-		print "
-		print "++ Node %s DVT Info ++" % self.nodeID
+		self.dvt.show()

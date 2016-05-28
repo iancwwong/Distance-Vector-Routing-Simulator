@@ -30,5 +30,5 @@ class DistanceVectorTable(object):
 		print "nodeTo %t | nodeVia %t | cost"
 		for nodeTo in self.distanceTo.keys():
 			print "%s %t | %s %t | %s" % \
-				(nodeTo, self.distanceTo[nodeTo][self.NODE_VIA], self.distanceTo[nodeTo][self.DISTANCE]
+				(nodeTo, self.distanceTo[nodeTo][self.NODE_VIA], self.distanceTo[nodeTo][self.DISTANCE])
 		print ""	# formatting
