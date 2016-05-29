@@ -6,6 +6,7 @@
 #!/usr/bin/python
 
 from DistanceVectorTable import DistanceVectorTable
+from AbstractDVT import AbstractDVT
 
 class DVRNode(object):
 
@@ -32,11 +33,16 @@ class DVRNode(object):
 		for i in range(0, self.numNeighbours):
 			lineParts = configFile.readline().split(' ')
 			neighbourID = lineParts[0]
-			neighbourCost = int(lineParts[1])
+			neighbourCost = float(lineParts[1])
 			neighbourPort = int(lineParts[2])
 			self.neighbours[neighbourID] = neighbourPort
 			self.dvt.insertDistanceEntry(neighbourID, neighbourCost, neighbourID)	# nodeVia is the neighbour itself
-			
+		
+	# Given an abstractDVT, update this DVT
+	def updateDVT(self, abstractDVT):
+		"""IMPLEMENT THIS!"""
+		pass
+	
 	# Show the details of this node
 	def showInfo(self):
 		print "== Info for node with id '%s' ==" % self.nodeID

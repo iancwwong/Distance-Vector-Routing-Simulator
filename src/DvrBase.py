@@ -6,6 +6,7 @@
 #!usr/bin/python
 
 from DVRNode import DVRNode
+from AbstractDVT import AbstractDVT
 from sys import argv
 import threading
 import time
@@ -25,7 +26,7 @@ dvtProcessList = []
 class TimerThread(threading.Thread):
 
 	# Attributes
-	IDLE_DURATION = 2.5		# how long is period between exchanging dvt's
+	IDLE_DURATION = 1		# how long is period between exchanging dvt's
 
 	# Constructor
 	def __init__(self):
@@ -37,7 +38,7 @@ class TimerThread(threading.Thread):
 		global sendFlag
 		while not self.event.isSet():
 			time.sleep(self.IDLE_DURATION)
-			if (self.event.isSet()):
+			if (self.event.isSet()):	# early check
 				break
 			time.sleep(self.IDLE_DURATION)
 			sendFlag = True
@@ -72,14 +73,31 @@ class ListenThread(threading.Thread):
 		global dvtProcessList		# The list that contains information to be parsed
 		while not self.event.isSet():
 			# Use select module to read from buffer
-			read_sockets, write_sockets, error_sockets = select.select([self.sock], [], [])
-			for rs in read_sockets:
-				if (rs == self.sock):
-					msg, addr = rs.recvfrom(self.BUFFER_SIZE)
-					if msg != "":
-						print "Message received! %s" % msg
+			msg = self.selectrecv()
+
+			# Parse message type
+			if msg != "":
+				msgComponents = msg.split('#')
+				msgType = msgComponents[1]
+
+				# Case when DVT from neighbour is received in the format
+				# Parse into an abstract DVT, and append to the dvtProcessList
+				# #NeighbourDVT#B#A=2,C=3,D=2
+				if msgType == "NeighbourDVT":
+					neighbourID = msgComponents[2]
+					costs = msgComponents[3].split(',')
+					abstractDVT = AbstractDVT(neighbourID, costs)
+					dvtProcessList.append(abstractDVT)		
 
 		print "Exiting listen module thread.."
+
+	# Read data from buffer using select module
+	def selectrecv(self):
+		read_sockets, write_sockets, error_sockets = select.select([self.sock], [], [])
+		for rs in read_sockets:
+			if (rs == self.sock):
+				msg, addr = rs.recvfrom(self.BUFFER_SIZE)
+				return msg
 
 	# Stop the listener by sending an empty message to itself
 	def stop(self):
@@ -109,6 +127,7 @@ def main():
 	print ""	# formatting
 
 	# Prepare the list of dvt's to process
+	global dvtProcessList
 	dvtProcessList = []
 
 	# Set the flag to send data to be false
@@ -140,9 +159,9 @@ def main():
 
 			# Process all the dvt's
 			while len(dvtProcessList) > 0:
-				# procDVT = dvtProcessList.pop(0)
-				# process procDVT
 				print "Processing the first DVT in those received..."
+				procDVT = dvtProcessList.pop(0)
+				node.updateDVT(procDVT)
 
 			# Check whether the node is stable
 			# if node.stable:
