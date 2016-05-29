@@ -43,6 +43,7 @@ class DistanceVectorTable(object):
 	# Increase the stability count of ALL entries by 1
 	# NOTE: Reaches a threshold of 3. If any are changed, then dvt is not yet stable
 	def incAllStabilityCount(self):
+		self.stable = True
 		for nodeTo in self.distanceTo.keys():
 			cost, nodeVia, stabilityCount = self.distanceTo[nodeTo]
 			if stabilityCount < 3:		# threshold

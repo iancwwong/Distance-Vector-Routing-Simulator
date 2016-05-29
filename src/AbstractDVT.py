@@ -41,7 +41,5 @@ def getAbstractDVTString(node):
 		abstractDVTStr += nodesTo[i] + '=' + str(node.dvt.distanceTo[nodesTo[i]][0])	# cost is the first entry in tuple
 		if (i < len(nodesTo) - 1):
 			abstractDVTStr += ','
-
-	print "Parsed DVT string: %s" % abstractDVTStr
 	return abstractDVTStr		
 		

@@ -77,7 +77,6 @@ class ListenThread(threading.Thread):
 
 			# Parse message type
 			if msg != "":
-				print "Message received: %s" % msg
 				msgComponents = msg.split('#')
 				msgType = msgComponents[1]
 
@@ -147,15 +146,16 @@ def main():
 	listenThread.start()
 	timerThread.start()
 
-	print "Starting to exchange node info..."
+	# Flag for indicating whether the stable node has been printed
+	stableNodePrinted = False
+
+	print "Node up and running!"
 	try:
 		while True:
 
 			# Check whether it is time to send out the DVT's
 			if sendFlag == True:
 				# Send the DVT's
-				print "Sending node's dvt to neighbours..."
-
 				dvrSender.sendDVT()
 
 				# Reset the flag
@@ -165,21 +165,18 @@ def main():
 			# NOTE: all are in format as a tuple: (neighbourID, costs)
 			#	 where costs is in the format: 	[ <NODETO>=<COST> ]
 			while len(dvtProcessList) > 0:
-				print "Processing the first DVT in those received..."
 				advtInfo = dvtProcessList.pop(0)
 				abstractDVT = AbstractDVT(advtInfo[0], advtInfo[1])
-				abstractDVT.show()
 				node.updateDVT(abstractDVT)
 
-				print "Updated node:"
-				node.showInfo()
-				print ""
-
-			# Check whether the node is stable
-			if node.stable:
+			# Only print node when it is both stable, and not yet printed
+			if not node.stable:
+				stableNodePrinted = False
+			elif (node.stable) and (not stableNodePrinted):
 				print "Node is stable!"
 				node.showInfo()
 				print ""
+				stableNodePrinted = True
 
 	# Quit when keyboardInterrupt (Ctrl+C)	
 	except KeyboardInterrupt:
