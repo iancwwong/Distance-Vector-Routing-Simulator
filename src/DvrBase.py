@@ -77,17 +77,17 @@ class ListenThread(threading.Thread):
 
 			# Parse message type
 			if msg != "":
+				print "Message received: %s" % msg
 				msgComponents = msg.split('#')
 				msgType = msgComponents[1]
 
 				# Case when DVT from neighbour is received in the format
-				# Parse into an abstract DVT, and append to the dvtProcessList
+				# Parse into ID and costs, append to the dvtProcessList
 				# #NeighbourDVT#B#A=2,C=3,D=2
 				if msgType == "NeighbourDVT":
 					neighbourID = msgComponents[2]
 					costs = msgComponents[3].split(',')
-					abstractDVT = AbstractDVT(neighbourID, costs)
-					dvtProcessList.append(abstractDVT)		
+					dvtProcessList.append((neighbourID, costs))		
 
 		print "Exiting listen module thread.."
 
@@ -158,14 +158,23 @@ def main():
 				sendFlag = False
 
 			# Process all the dvt's
+			# NOTE: all are in format as a tuple: (neighbourID, costs)
+			#	 where costs is in the format: 	[ <NODETO>=<COST> ]
 			while len(dvtProcessList) > 0:
 				print "Processing the first DVT in those received..."
-				procDVT = dvtProcessList.pop(0)
-				node.updateDVT(procDVT)
+				advtInfo = dvtProcessList.pop(0)
+				abstractDVT = AbstractDVT(advtInfo[0], advtInfo[1])
+				node.updateDVT(abstractDVT)
+
+				print "Updated node:"
+				node.showInfo()
+				print ""
 
 			# Check whether the node is stable
-			# if node.stable:
-			#	node.dvt.show()
+			if node.stable:
+				print "Node is stable!"
+				node.showInfo()
+				print ""
 
 	# Quit when keyboardInterrupt (Ctrl+C)	
 	except KeyboardInterrupt:

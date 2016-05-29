@@ -6,7 +6,7 @@
 #!/usr/bin/python
 
 from DistanceVectorTable import DistanceVectorTable
-from AbstractDVT import AbstractDVT
+import AbstractDVT as ADVT
 
 class DVRNode(object):
 
@@ -16,6 +16,7 @@ class DVRNode(object):
 	neighbours = {}		# Stores ID's of neighbour nodes, and their associated port numbers
 				# Format: {'NeighbourID': <port>}
 	dvt = None		# Stores distances to nodes via nodes
+	stable = False		# Indicates whether the DVT has stablised
 	
 	# Constructor - given nodeID, and name of configuration file
 	def __init__(self, nodeid, configFileName):
