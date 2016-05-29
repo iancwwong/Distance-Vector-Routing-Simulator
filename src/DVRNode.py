@@ -1,3 +1,6 @@
+# ----------------------------------------------------
+# Distance Vector Routing Node
+# ----------------------------------------------------
 # This class represents a node in the Distance Vector Routing protocol
 
 #!/usr/bin/python
@@ -22,7 +25,6 @@ class DVRNode(object):
 		# Assumes the config file is not empty
 		configFile = open(configFileName, 'r')
 		self.numNeighbours = int(configFile.readline())
-		print "%d" % self.numNeighbours
 
 		# Parse each line in the file
 		# Specified in the format:
@@ -32,7 +34,6 @@ class DVRNode(object):
 			neighbourID = lineParts[0]
 			neighbourCost = int(lineParts[1])
 			neighbourPort = int(lineParts[2])
-			
 			self.neighbours[neighbourID] = neighbourPort
 			self.dvt.insertDistanceEntry(neighbourID, neighbourCost, neighbourID)	# nodeVia is the neighbour itself
 			

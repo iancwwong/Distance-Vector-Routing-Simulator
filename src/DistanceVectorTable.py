@@ -1,3 +1,6 @@
+# ----------------------------------------------------
+# Distance Vector Routing Table
+# ----------------------------------------------------
 # This class represents a Distance Vector Routing table
 
 #!/usr/bin/python
