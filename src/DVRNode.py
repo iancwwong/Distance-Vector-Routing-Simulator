@@ -46,9 +46,11 @@ class DVRNode(object):
 
 		# Update the DVT based on info from abstract DVT
 		for dest in abstractDVT.dvt.keys():
-			costToDest = abstractDVT.dvt[dest] + self.dvt.distanceTo[abstractDVT.nodeID][0]
-			if (dest not in self.dvt.distanceTo.keys()) or (self.dvt.distanceTo[dest][0] > costToDest):
-				self.dvt.distanceTo[dest] = (costToDest, abstractDVT.nodeID, 0)
+			# Only consider the destinations which are NOT this node
+			if dest != self.nodeID:
+				costToDest = abstractDVT.dvt[dest] + self.dvt.distanceTo[abstractDVT.nodeID][0]
+				if (dest not in self.dvt.distanceTo.keys()) or (self.dvt.distanceTo[dest][0] > costToDest):
+					self.dvt.distanceTo[dest] = (costToDest, abstractDVT.nodeID, 0)
 
 		# Change stability flag as accordingly
 		self.stable = self.dvt.stable
