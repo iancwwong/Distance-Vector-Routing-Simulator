@@ -39,3 +39,13 @@ class DistanceVectorTable(object):
 	# Insert an entry into the distance vector table
 	def insertDistanceEntry(self, nodeID, nodeCost, nodeVia):
 		self.distanceTo[nodeID] = (nodeCost, nodeVia, 0)	# default: set stability count to 0
+
+	# Increase the stability count of ALL entries by 1
+	# NOTE: Reaches a threshold of 3. If any are changed, then dvt is not yet stable
+	def incAllStabilityCount(self):
+		for nodeTo in self.distanceTo.keys():
+			cost, nodeVia, stabilityCount = self.distanceTo[nodeTo]
+			if stabilityCount < 3:		# threshold
+				stabilityCount += 1
+				self.stable = False
+			self.distanceTo[nodeTo] = (cost, nodeVia, stabilityCount)

@@ -41,8 +41,21 @@ class DVRNode(object):
 		
 	# Given an abstractDVT, update this DVT
 	def updateDVT(self, abstractDVT):
-		"""IMPLEMENT THIS!"""
-		pass
+		# Increase the stability count of ALL entries
+		self.dvt.incAllStabilityCount()
+
+		# Update the DVT based on info from abstract DVT
+		for dest in abstractDVT.dvt.keys():
+			costToDest = abstractDVT.dvt[dest] + self.dvt.distanceTo[abstractDVT.nodeID][0]
+			if (dest not in self.dvt.distanceTo.keys()) or (self.dvt.distanceTo[dest][0] > costToDest):
+				self.dvt.distanceTo[dest] = (costToDest, abstractDVT.nodeID, 0)
+
+		# Change stability flag as accordingly
+		self.stable = self.dvt.stable
+
+	# Get an abstract DVT from this node
+	def getAbstractDVTString(self):
+		return ADVT.getAbstractDVTString(self)
 	
 	# Show the details of this node
 	def showInfo(self):

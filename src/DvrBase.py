@@ -164,6 +164,7 @@ def main():
 				print "Processing the first DVT in those received..."
 				advtInfo = dvtProcessList.pop(0)
 				abstractDVT = AbstractDVT(advtInfo[0], advtInfo[1])
+				abstractDVT.show()
 				node.updateDVT(abstractDVT)
 
 				print "Updated node:"
