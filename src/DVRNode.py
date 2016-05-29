@@ -1,5 +1,5 @@
 # ----------------------------------------------------
-# Distance Vector Routing Node
+# DISTANCE VECTOR ROUTING NODE
 # ----------------------------------------------------
 # This class represents a node in the Distance Vector Routing protocol
 
@@ -52,10 +52,6 @@ class DVRNode(object):
 
 		# Change stability flag as accordingly
 		self.stable = self.dvt.stable
-
-	# Get an abstract DVT from this node
-	def getAbstractDVTString(self):
-		return ADVT.getAbstractDVTString(self)
 	
 	# Show the details of this node
 	def showInfo(self):

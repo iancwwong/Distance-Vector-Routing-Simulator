@@ -7,6 +7,7 @@
 
 from DVRNode import DVRNode
 from AbstractDVT import AbstractDVT
+from DVRSender import DVRSender
 from sys import argv
 import threading
 import time
@@ -57,16 +58,15 @@ class TimerThread(threading.Thread):
 class ListenThread(threading.Thread):
 	
 	# Constructor
-	def __init__(self, portNum):
+	def __init__(self, sock):
 		threading.Thread.__init__(self)
 		self.event = threading.Event()
-		
-		# Create udp socket with specified data port number
-		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		self.sock.bind(('', portNum))
 
 		# Set buffer size
 		self.BUFFER_SIZE = 1024
+
+		# Assign the given socket
+		self.sock = sock
 
 	# Thread body - constantly listen for messages
 	def run(self):
@@ -126,6 +126,10 @@ def main():
 	node.showInfo()
 	print ""	# formatting
 
+	# Create udp socket with specified data port number
+	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	sock.bind(('', nodePort))
+
 	# Prepare the list of dvt's to process
 	global dvtProcessList
 	dvtProcessList = []
@@ -135,9 +139,9 @@ def main():
 	sendFlag = False
 	
 	# Create the listen thread, timerThread, and exchange class
-	listenThread = ListenThread(nodePort)
+	listenThread = ListenThread(sock)
 	timerThread = TimerThread()
-	# dvrSender = DVRSender(node)
+	dvrSender = DVRSender(sock, node)
 
 	# Run the listen thread and timer thread
 	listenThread.start()
@@ -152,7 +156,7 @@ def main():
 				# Send the DVT's
 				print "Sending node's dvt to neighbours..."
 
-				#dvrSender.sendDVT()
+				dvrSender.sendDVT()
 
 				# Reset the flag
 				sendFlag = False
