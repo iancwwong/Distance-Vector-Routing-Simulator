@@ -5,30 +5,34 @@
 class DistanceVectorTable(object):
 	# Constants
 	# For indexing
-	NODE_VIA = 0
-	DISTANCE = 1
+	COST = 0
+	NODE_VIA = 1
+	STABILITY = 2
 	
 	# Attributes
 	nodeID = ''		# (Character) ID of node that this DVT belongs to
 	distanceTo = {}		# Distances to different nodes
-				# Stored in the format: { 'nodeTo': ( cost, nodeVia ) }
+				# Stored in the format: { 'nodeTo': ( cost, nodeVia, stableCount ) }
+				#	where stableCount indicates number of updates where the entry for 
+				#	'nodeTo' has NOT changed
+	numDistanceEntries = 0	# Number of distance entries in the table (essentially len(distanceTo.keys()))
+	stable = False		# Indicates whether the DVT has stablised
 
 	# Constructor
-	def __init__(self, dataStr):
-		dvtComponents = dataStr.split('~')
-		self.nodeID = dvtComponents[0]
-		costs = dvtComponents[1]
-		for costData in costs.split(','):
-			costInfo = costsData.split('=')
-			nodeTo = costInfo[0]
-			cost = float(costInfo[1])
-			self.distanceTo[nodeTo] = (nodeTo, cost)
+	def __init__(self, nodeID):
+		self.nodeID = nodeID
+		self.distanceTo = {}
+		self.numDistanceEntries = 0
 
 	# Show the distance vector table
 	def show(self):
-		print "++ Distance Vector Table ++" % self.nodeID
-		print "nodeTo %t | nodeVia %t | cost"
+		print "++ Distance Vector Table ++"
+		print "nodeTo	| (cost, nodeVia, stability count)"
+		print "-------------------------------------------"
 		for nodeTo in self.distanceTo.keys():
-			print "%s %t | %s %t | %s" % \
-				(nodeTo, self.distanceTo[nodeTo][self.NODE_VIA], self.distanceTo[nodeTo][self.DISTANCE])
-		print ""	# formatting
+			print "%s	| %s" % \
+				(nodeTo, str(self.distanceTo[nodeTo]))
+
+	# Insert an entry into the distance vector table
+	def insertDistanceEntry(self, nodeID, nodeCost, nodeVia):
+		self.distanceTo[nodeID] = (nodeCost, nodeVia, 0)	# default: set stability count to 0
