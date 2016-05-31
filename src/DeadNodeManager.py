@@ -1,5 +1,7 @@
 # This class manages nodes by controlling which nodes are dead and alive
 
+from DVRSender import DVRSender
+
 class DeadNodeManager(object):
 
 	# Attributes
@@ -7,8 +9,10 @@ class DeadNodeManager(object):
 	neighbours = {}		# Mapping of port numbers to neighbours and alive count
 				# Format: { 'portnum': ( <neighbourID>, <aliveCount> ) }
 				# 	where alive count is number of times a port can be non-existent before being considered to be dead
+	dvrSender = None	# The sender class
 
-	def __init__(self, node):
+	def __init__(self, node, dvrSender):
+
 		self.node = node
 		
 		# Obtain the neighbours and alive count mapping
@@ -16,6 +20,9 @@ class DeadNodeManager(object):
 		for portNum in self.neighbours.keys():
 			neighbourID = self.neighbours[portNum]
 			self.neighbours[portNum] = (neighbourID, 3)
+
+		# Assign sender
+		self.dvrSender = dvrSender
 
 	# Given a list of ports where messages have originated from,
 	# check whether there are any dead neighbours that should now
@@ -41,11 +48,14 @@ class DeadNodeManager(object):
 				print "Death of %s is detected." % neighbourID
 				self.node.considerDead(neighbourID)
 
-				# Reset node's dvt
-				self.node.resetDVT()
+				# Send reset message to neighbours
+				self.dvrSender.sendReset()
 				
 				# remove port number from neighbours
 				self.neighbours.pop(portnum)
+
+				# reset node's dvt
+				self.node.resetDVT()
 
 	# Reduce the alive count of all neighbours
 	def reduceAllAliveCount(self):

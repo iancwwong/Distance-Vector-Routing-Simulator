@@ -20,7 +20,8 @@ sendDVTFlag = False			# Flag that indicates whether to send the node's DVT to ne
 checkSourcePorts = False		# Flag that indicates whether to inspect which source ports have been in communication
 sourcePorts = []			# Holds the source ports for which messages have arrived
 					# Used to check dead neighbours (assumes unchangeable mapping from port to neighbour id)
-dvtProcessList = []
+resetDVTFlag = False			# indicate to reset dvt
+dvtProcessList = []			# holds the dvt's to process
 
 
 # ----------------------------------------------------
@@ -80,6 +81,7 @@ class ListenThread(threading.Thread):
 	def run(self):
 		global dvtProcessList		# The list that contains information to be parsed
 		global sourcePorts		# the list that contains the source ports from which information is received
+		global resetDVTFlag		# indicate whether to reset the node's dvt
 		while not self.event.isSet():
 			# Use select module to read from buffer
 			msg, addr = self.selectrecv()
@@ -95,11 +97,15 @@ class ListenThread(threading.Thread):
 
 				# Case when DVT from neighbour is received in the format
 				# Parse into ID and costs, append to the dvtProcessList
-				# #NeighbourDVT#B#A=2,C=3,D=2
+				# '#NeighbourDVT#B#A=2,C=3,D=2'
 				if msgType == "NeighbourDVT":
 					neighbourID = msgComponents[2]
 					costs = msgComponents[3].split(',')
-					dvtProcessList.append((neighbourID, costs))		
+					dvtProcessList.append((neighbourID, costs))
+
+				# Case when reset messag received
+				elif msgType == "Reset":
+					resetDVTFlag = True		
 
 		print "Exiting listen module thread.."
 
@@ -138,9 +144,6 @@ def main():
 	node.showInfo()
 	print ""	# formatting
 
-	# Prepare DeadNodeManager
-	deadNodeManager = DeadNodeManager(node)
-
 	# Create udp socket with specified data port number
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	sock.bind(('', nodePort))
@@ -158,11 +161,16 @@ def main():
 	checkSourcePorts = False
 	global sourcePorts
 	sourcePorts = []
+
+	# Prepare reset flag
+	global resetDVTFlag
+	resetDVTFlag = False
 	
-	# Create the listen thread, timerThread, and exchange class
+	# Create the listen thread, timerThread, dead node manager, and sender class
 	listenThread = ListenThread(sock)
 	timerThread = TimerThread()
 	dvrSender = DVRSender(sock, node)
+	deadNodeManager = DeadNodeManager(node, dvrSender)
 
 	# Run the listen thread and timer thread
 	listenThread.start()
@@ -187,6 +195,11 @@ def main():
 				deadNodeManager.manageDeadNodes(sourcePorts)
 				sourcePorts = []		# reset
 				checkSourcePorts = False
+
+			# Check whether to reset the node's dvt
+			if resetDVTFlag == True:
+				node.resetDVT()
+				resetDVTFlag = False
 	
 			# Process all the dvt's
 			# NOTE: all are in format as a tuple: (neighbourID, costs)

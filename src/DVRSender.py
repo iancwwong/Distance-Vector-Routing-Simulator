@@ -29,3 +29,11 @@ class DVRSender(object):
 			dataStr = "#NeighbourDVT" + AVDT.getAbstractDVTString(self.node)
 			self.sock.sendto(dataStr, (self.UDP_IP, port))
 
+	# Send a message to neighbour nodes
+	def sendReset(self):
+		for neighbour in self.node.neighbours.keys():
+			port = self.node.neighbours[neighbour]
+			dataStr = "#Reset"
+			self.sock.sendto(dataStr, (self.UDP_IP, port))
+		
+

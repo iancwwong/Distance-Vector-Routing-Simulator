@@ -75,34 +75,24 @@ class DVRNode(object):
 				self.dvt.distanceTo.pop(nodeTo)
 				self.dvt.resetStability()
 
-	# Given the id of a dead neighbour, manage it's dicts appropriately
-	# NOTE: Assumes deadNeighbourID exists in neighbours
+	# Add dead neighbour to list of dead neighbours
+	# and remove from neighbour port list
+	# NOTE: Assumes the deadneighbour is one of the neighbours
 	def considerDead(self, deadNeighbourID):
-
-		# Add dead neighbour id
 		self.deadNeighbours.append(deadNeighbourID)
+		self.neighbours.pop(deadNeighbourID)
 
-		# Remove all instances of destination, and nodeVia in dvt
-		# corresponding to ID of deadNeighbourID
-		#self.dvt.removeAll(deadNeighbourID)
-			
-		# Remove the entry in neighbours
-		#self.neighbours.pop(deadNeighbourID)
-
-		# Restore the entries of alive neighbours
-		self.restoreAliveNeighbourEntries()
-			
-		# Reset the stability
-		self.dvt.resetStability()
-
-	def restoreAliveNeighbourEntries(self):
+	# Reset the node's dvt, considering dead neighbours
+	def resetDVT(self):
+		self.dvt.distanceTo = {}
 		for nodeID in self.originalDVT.keys():
 			if not nodeID in self.deadNeighbours:
 				self.dvt.distanceTo[nodeID] = self.originalDVT[nodeID]
+		self.dvt.resetStability()
 
 	# Check for stablity of node's dvt
 	def isStable(self):
-		return self.dvt.stable
+		return self.dvt.isStable()
 
 	# For all neighbours, return a mapping from neighbour port to neighbour id
 	def getPortToNeighbourMapping(self):
