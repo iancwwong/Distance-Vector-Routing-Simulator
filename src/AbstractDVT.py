@@ -15,6 +15,7 @@ class AbstractDVT(object):
 	# 	[ <NODETO>=<COST> ]
 	def __init__(self, nodeID, costs):
 		self.nodeID = nodeID
+		self.dvt = {}
 		for costInfo in costs:
 			nodeTo = costInfo.split('=')[0]
 			cost = float(costInfo.split('=')[1])

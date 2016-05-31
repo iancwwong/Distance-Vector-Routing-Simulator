@@ -8,6 +8,7 @@
 from DVRNode import DVRNode
 from AbstractDVT import AbstractDVT
 from DVRSender import DVRSender
+from DeadNodeManager import DeadNodeManager
 from sys import argv
 import threading
 import time
@@ -15,8 +16,12 @@ import socket
 import select
 
 # Global variables
-sendFlag = False
+sendDVTFlag = False			# Flag that indicates whether to send the node's DVT to neighbours
+checkSourcePorts = False		# Flag that indicates whether to inspect which source ports have been in communication
+sourcePorts = []			# Holds the source ports for which messages have arrived
+					# Used to check dead neighbours (assumes unchangeable mapping from port to neighbour id)
 dvtProcessList = []
+
 
 # ----------------------------------------------------
 # SCHEDULER THREAD
@@ -36,13 +41,16 @@ class TimerThread(threading.Thread):
 
 	# Thread body
 	def run(self):
-		global sendFlag
+		global sendDVTFlag
+		global checkSourcePorts
+		i = 0
 		while not self.event.isSet():
 			time.sleep(self.IDLE_DURATION)
 			if (self.event.isSet()):	# early check
 				break
 			time.sleep(self.IDLE_DURATION)
-			sendFlag = True
+			sendDVTFlag = True
+			checkSourcePorts = True
 		print "Exiting timer timer thread..."
 
 	# Stop the thread
@@ -71,9 +79,14 @@ class ListenThread(threading.Thread):
 	# Thread body - constantly listen for messages
 	def run(self):
 		global dvtProcessList		# The list that contains information to be parsed
+		global sourcePorts		# the list that contains the source ports from which information is received
 		while not self.event.isSet():
 			# Use select module to read from buffer
-			msg = self.selectrecv()
+			msg, addr = self.selectrecv()
+	
+			# Append the addr to source ports
+			_, sourcePort = addr
+			sourcePorts.append(sourcePort)
 
 			# Parse message type
 			if msg != "":
@@ -96,7 +109,7 @@ class ListenThread(threading.Thread):
 		for rs in read_sockets:
 			if (rs == self.sock):
 				msg, addr = rs.recvfrom(self.BUFFER_SIZE)
-				return msg
+				return (msg, addr)
 
 	# Stop the listener by sending an empty message to itself
 	def stop(self):
@@ -125,6 +138,9 @@ def main():
 	node.showInfo()
 	print ""	# formatting
 
+	# Prepare DeadNodeManager
+	deadNodeManager = DeadNodeManager(node)
+
 	# Create udp socket with specified data port number
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	sock.bind(('', nodePort))
@@ -134,8 +150,14 @@ def main():
 	dvtProcessList = []
 
 	# Set the flag to send data to be false
-	global sendFlag
-	sendFlag = False
+	global sendDVTFlag
+	sendDVTFlag = False
+
+	# Prepare variables to examine source ports which have sent data to this node
+	global checkSourcePorts
+	checkSourcePorts = False
+	global sourcePorts
+	sourcePorts = []
 	
 	# Create the listen thread, timerThread, and exchange class
 	listenThread = ListenThread(sock)
@@ -154,13 +176,18 @@ def main():
 		while True:
 
 			# Check whether it is time to send out the DVT's
-			if sendFlag == True:
+			if sendDVTFlag == True:
 				# Send the DVT's
 				dvrSender.sendDVT()
+				sendDVTFlag = False
 
-				# Reset the flag
-				sendFlag = False
-
+			# Check whether it is time to inspect for source ports (ie dead neighbours)
+			if checkSourcePorts == True:
+				# manage dead nodes
+				deadNodeManager.manageDeadNodes(sourcePorts)
+				sourcePorts = []		# reset
+				checkSourcePorts = False
+	
 			# Process all the dvt's
 			# NOTE: all are in format as a tuple: (neighbourID, costs)
 			#	 where costs is in the format: 	[ <NODETO>=<COST> ]
@@ -170,9 +197,9 @@ def main():
 				node.updateDVT(abstractDVT)
 
 			# Only print node when it is both stable, and not yet printed
-			if not node.stable:
+			if not node.isStable():
 				stableNodePrinted = False
-			elif (node.stable) and (not stableNodePrinted):
+			elif (node.isStable()) and (not stableNodePrinted):
 				print "Node is stable!"
 				node.showInfo()
 				print ""
