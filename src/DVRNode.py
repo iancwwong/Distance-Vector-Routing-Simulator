@@ -18,6 +18,7 @@ class DVRNode(object):
 	deadNeighbours = []	# stores ID's of dead neighbours
 	dvt = None		# Stores distances to nodes via nodes
 	originalDVT = None	# Stores the original dvt upon intialisation
+	originalNeighbours = {}	# Stores the original mapping of neighbour and port number
 
 	prdvt = None		# Stores the DVT after link change
 	changedLinks = False	# Flag that indicates the poisoned reverse links have been applied
@@ -26,6 +27,7 @@ class DVRNode(object):
 	def __init__(self, nodeid, configFileName, poisonedReverse):
 		self.nodeID = nodeid
 		self.dvt = DistanceVectorTable(self.nodeID)
+		self.prdvt = DistanceVectorTable(self.nodeID)
 	
 		# Prepare the node's neighbour and dvt info from configuration file
 		# Assumes the config file is not empty
@@ -44,19 +46,45 @@ class DVRNode(object):
 				neighbourPort = int(lineParts[2])
 				self.neighbours[neighbourID] = neighbourPort
 				self.dvt.insertDistanceEntry(neighbourID, neighbourCost, neighbourID)	# nodeVia is the neighbour itself
-			self.originalDVT = None
-			self.originalDVT = deepcopy(self.dvt.distanceTo)
 
 		# Case when running with poisoned reverse:
 		# Parse each line in the file
 		#	<NODE ID> <FIRST COST> <NEXT COST> <NODE PORT>
 		else:
 			for i in range(0, numNeighbours):
-				pass
+				lineParts = configFile.readline().split(' ')
+				neighbourID = lineParts[0]
+				neighbourFirstCost = float(lineParts[1])
+				neighbourSecondCost = float(lineParts[2])
+				neighbourPort = int(lineParts[3])
+
+				# Fix port number
+				self.neighbours[neighbourID] = neighbourPort
+				
+				# Append to init dvt
+				self.dvt.insertDistanceEntry(neighbourID, neighbourFirstCost, neighbourID)
+			
+				# Append to poisoned reverse dvt
+				self.prdvt.insertDistanceEntry(neighbourID, neighbourSecondCost, neighbourID)
+
+		# Obtain a copy of the initialised mapping btwn neighbours and port number
+		self.originalNeighbours = deepcopy(self.neighbours)
+
+		# Obtain a copy of the original dvt
+		self.originalDVT = None
+		self.originalDVT = deepcopy(self.dvt.distanceTo)
 
 	# Change the prdvt to become the current prdvt
+	# NOTE: This will prepare the prdvt to be changed (first dvt will be lost permanently)
 	def changeLinkValues(self):
+		# Change current dvt
 		self.dvt = self.prdvt
+
+		# Reassign original neighbours
+		self.neighbours = deepcopy(self.originalNeighbours)
+
+		# Change original dvt
+		self.originalDVT = deepcopy(self.dvt.distanceTo)
 		
 		# set the changedLinks flag
 		self.changedLinks = True

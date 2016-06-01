@@ -14,6 +14,7 @@ class DeadNodeManager(object):
 	def __init__(self, node, dvrSender):
 
 		self.node = node
+		self.neighbours = {}
 		
 		# Obtain the neighbours and alive count mapping
 		self.neighbours = self.node.getPortToNeighbourMapping()

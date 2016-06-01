@@ -227,6 +227,14 @@ def main():
 				# Get the node to change it's link values (if not changed already)
 				if (poisonedReverse == True) and (node.changedLinks == False):
 					node.changeLinkValues()
+					print "Node link values changed!"
+
+					# Refresh deadNodeManager
+					deadNodeManager = None
+					deadNodeManager = DeadNodeManager(node, dvrSender)
+
+					time.sleep(1)
+					dvtProcessList = []
 
 				# Otherwise, set node to be printed
 				else:
