@@ -232,7 +232,7 @@ def main():
 					deadNodeManager = None
 					deadNodeManager = DeadNodeManager(node, dvrSender)
 
-					time.sleep(1)
+					time.sleep(10)		# Wait until all changes are carried out
 					dvtProcessList = []
 
 				# Otherwise, set node to be printed
