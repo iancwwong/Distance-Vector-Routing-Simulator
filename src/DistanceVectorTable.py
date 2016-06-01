@@ -27,15 +27,6 @@ class DistanceVectorTable(object):
 		self.nodeID = nodeID
 		self.distanceTo = {}
 
-	# Show the distance vector table
-	def show(self):
-		print "++ Distance Vector Table ++"
-		print "nodeTo	| (cost, nodeVia, stability count)"
-		print "-------------------------------------------"
-		for nodeTo in self.distanceTo.keys():
-			print "%s	| %s" % \
-				(nodeTo, str(self.distanceTo[nodeTo]))
-
 	# Insert an entry into the distance vector table
 	def insertDistanceEntry(self, nodeID, nodeCost, nodeVia):
 		self.distanceTo[nodeID] = (nodeCost, nodeVia, 0)	# default: set stability count to 0
@@ -75,4 +66,20 @@ class DistanceVectorTable(object):
 			if stableCount < 3:
 				return False
 		return True
+
+	# Show the distance vector table
+	def show(self):
+		print "++ Distance Vector Table ++"
+		print "nodeTo	| (cost, nodeVia, stability count)"
+		print "-------------------------------------------"
+		for nodeTo in self.distanceTo.keys():
+			print "%s	| %s" % \
+				(nodeTo, str(self.distanceTo[nodeTo]))
+
+	# Show the distance vector table in a concise way
+	def conciseShow(self):
+		print "++ Distance Vector Info ++"
+		for nodeTo in self.distanceTo.keys():
+			cost, nodeVia, _ = self.distanceTo[nodeTo]
+			print "shortest path to node %s: the next hop is %s and the cost is %s" % (nodeTo, nodeVia, str(cost))
 			

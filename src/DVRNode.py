@@ -143,6 +143,11 @@ class DVRNode(object):
 	def getPortToNeighbourMapping(self):
 		newMapping = dict((v,k) for k,v in self.neighbours.iteritems())
 		return newMapping
+
+	# Show the details of this node in concise form
+	def showConciseInfo(self):
+		print "== Info for node with id '%s' ==" % self.nodeID
+		self.dvt.conciseShow()
 	
 	# Show the details of this node
 	def showInfo(self):

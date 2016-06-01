@@ -33,7 +33,7 @@ dvtProcessList = []			# holds the dvt's to process
 class TimerThread(threading.Thread):
 
 	# Attributes
-	IDLE_DURATION = 1		# how long is period between exchanging dvt's
+	IDLE_DURATION = 2.5		# how long is period between exchanging dvt's
 
 	# Constructor
 	def __init__(self):
@@ -44,7 +44,6 @@ class TimerThread(threading.Thread):
 	def run(self):
 		global sendDVTFlag
 		global checkSourcePorts
-		i = 0
 		while not self.event.isSet():
 			time.sleep(self.IDLE_DURATION)
 			if (self.event.isSet()):	# early check
@@ -147,8 +146,8 @@ def main():
 	# Create the node
 	print "Initialising node..."
 	node = DVRNode(nodeID, configFilename, poisonedReverse)
-	node.showInfo()
-	print ""	# formatting
+	#node.showInfo()
+	#print ""	# formatting
 
 	# Create udp socket with specified data port number
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -220,7 +219,7 @@ def main():
 				stableNodePrinted = False
 			elif (node.isStable()) and (not stableNodePrinted):
 				print "Node is stable!"
-				node.showInfo()
+				node.showConciseInfo()
 				print ""
 
 				# Case when running poisoned reverse:
