@@ -130,7 +130,7 @@ def main():
 
 	# Check for proper usage
 	if len(argv) < 4:
-		print "Usage: python DvrBase.py <NODE_ID> <NODE_PORT> <config.txt> [-p] [-e]"
+		print "Usage: python DvrBase.py <NODE_ID> <NODE_PORT> <config.txt> [-p]"
 		exit()
 
 	# Parse arguments
@@ -138,9 +138,15 @@ def main():
 	nodePort = int(argv[2])
 	configFilename = argv[3]
 
+	# Check for poisoned reverse argument
+	poisonedReverse = False
+	if (len(argv) >= 5) and (argv[4] == '-p'):
+		print "Running with poisoned reverse.."
+		poisonedReverse = True
+
 	# Create the node
 	print "Initialising node..."
-	node = DVRNode(nodeID, configFilename)
+	node = DVRNode(nodeID, configFilename, poisonedReverse)
 	node.showInfo()
 	print ""	# formatting
 
@@ -216,7 +222,15 @@ def main():
 				print "Node is stable!"
 				node.showInfo()
 				print ""
-				stableNodePrinted = True
+
+				# Case when running poisoned reverse:
+				# Get the node to change it's link values (if not changed already)
+				if (poisonedReverse == True) and (node.changedLinks == False):
+					node.changeLinkValues()
+
+				# Otherwise, set node to be printed
+				else:
+					stableNodePrinted = True
 
 	# Quit when keyboardInterrupt (Ctrl+C)	
 	except KeyboardInterrupt:

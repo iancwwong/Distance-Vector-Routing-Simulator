@@ -13,36 +13,53 @@ class DVRNode(object):
 
 	# Attributes
 	nodeID = ''		# (Character) ID of this node
-	numNeighbours = 0
 	neighbours = {}		# Stores ID's of neighbour nodes, and their associated port numbers
 				# Format: {'NeighbourID': <port>}
 	deadNeighbours = []	# stores ID's of dead neighbours
 	dvt = None		# Stores distances to nodes via nodes
 	originalDVT = None	# Stores the original dvt upon intialisation
 
-	# Constructor - given nodeID, and name of configuration file
-	def __init__(self, nodeid, configFileName):
+	prdvt = None		# Stores the DVT after link change
+	changedLinks = False	# Flag that indicates the poisoned reverse links have been applied
+
+	# Constructor - given nodeID, name of configuration file, and poisoned reverse flag
+	def __init__(self, nodeid, configFileName, poisonedReverse):
 		self.nodeID = nodeid
 		self.dvt = DistanceVectorTable(self.nodeID)
 	
 		# Prepare the node's neighbour and dvt info from configuration file
 		# Assumes the config file is not empty
 		configFile = open(configFileName, 'r')
-		self.numNeighbours = int(configFile.readline())
+		numNeighbours = int(configFile.readline())
 
+		# Case when not running with poisoned reverse:
 		# Parse each line in the file
 		# Specified in the format:
 		#	<NODE ID> <COST> <NODE PORT>
-		for i in range(0, self.numNeighbours):
-			lineParts = configFile.readline().split(' ')
-			neighbourID = lineParts[0]
-			neighbourCost = float(lineParts[1])
-			neighbourPort = int(lineParts[2])
-			self.neighbours[neighbourID] = neighbourPort
-			self.dvt.insertDistanceEntry(neighbourID, neighbourCost, neighbourID)	# nodeVia is the neighbour itself
-		self.originalDVT = None
+		if poisonedReverse == False:
+			for i in range(0, numNeighbours):
+				lineParts = configFile.readline().split(' ')
+				neighbourID = lineParts[0]
+				neighbourCost = float(lineParts[1])
+				neighbourPort = int(lineParts[2])
+				self.neighbours[neighbourID] = neighbourPort
+				self.dvt.insertDistanceEntry(neighbourID, neighbourCost, neighbourID)	# nodeVia is the neighbour itself
+			self.originalDVT = None
+			self.originalDVT = deepcopy(self.dvt.distanceTo)
 
-		self.originalDVT = deepcopy(self.dvt.distanceTo)
+		# Case when running with poisoned reverse:
+		# Parse each line in the file
+		#	<NODE ID> <FIRST COST> <NEXT COST> <NODE PORT>
+		else:
+			for i in range(0, numNeighbours):
+				pass
+
+	# Change the prdvt to become the current prdvt
+	def changeLinkValues(self):
+		self.dvt = self.prdvt
+		
+		# set the changedLinks flag
+		self.changedLinks = True
 		
 	# Given an abstractDVT, update this DVT
 	def updateDVT(self, abstractDVT):
